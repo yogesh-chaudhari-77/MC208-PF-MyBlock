@@ -1,0 +1,172 @@
+/*
+ * Filename 	: MyBlock.java
+ * Author 		: Yogeshwar Girish Chaudhari 
+ * Email		: s3828116@student.rmit.edu.au
+ * Date			: 15-03-2020
+ * Description 	: MyBlock is a simple tool which can help one design a block of land.
+
+ */
+ 
+//MyBlock class 
+
+// It does NOT need to handle any input at all.  
+// All the input should occur in the main method
+//
+// If you find yourself needing to do input here rethink your solution.
+
+class MyBlock {
+	private int[][] block;
+	private byte blockRows 								= 0;		// Minimizing need of repetitively calculating len(rows) & len(cols) of block
+	private byte blockCols 								= 0;		
+	private boolean vacant 								= true;		
+	private static byte currentHouse 					= 1;		// Maintains the number of house allocated
+	private static final byte emptyChar 				= 0;		// Constant that indicates availability
+	private static final byte minDistanceInHouses 		= 1;		// Constant that determines minimum distance between houses
+	private static final byte minDistanceFromBlockEdges = 1;		// Leaves these many rows and columns from block edges
+	private static final byte minHouseRows 				= 1;		// Min rows of house, house can be 1x_
+	private static final byte minHouseCols 				= 1;		// min columns of house, house can be _x1	
+
+
+	// Initialize the block, each cell is set to the character '0' 
+	public MyBlock(int maxRows, int maxColumns) {
+		this.block = new int[maxRows][maxColumns];
+		this.blockRows = (byte) maxRows;
+		this.blockCols = (byte) maxColumns;
+		
+		this.clearBlock();
+	}
+
+
+	// Display the entire block as a matrix 
+	public void displayBlock() {
+		for(int i=0; i < this.blockRows; i++) {
+			for(int j=0; j < this.blockCols ; j++) {
+				System.out.print(this.block[i][j]+" ");
+				if(j == (this.blockCols - 1)) {
+					System.out.print("\n");
+				}
+			}
+		}
+	}
+
+
+	// Clear out the block. This involves setting each cell value to '0'
+	public void clearBlock() {
+		
+		// Minimizing array iteration for repetitive clear operation 
+		if(!this.vacant) {
+			for(int i=0; i < this.blockRows; i++) {
+				for(int j=0; j < this.blockCols; j++) {
+					this.block[i][j] = MyBlock.emptyChar;			
+				}
+			}
+		}else {
+			ProgFunAssignment1.console_log("Block is already empty");
+		}
+		
+		this.vacant = true;			
+		MyBlock.currentHouse = 1;			// House numbering will start with 1 again
+	}
+
+
+	// Build a house on the block
+
+	// Ensure none of the other rules are violated
+	// Return if any rule is violated
+	// An error message should display when an error occurs
+	// If all is ok "build" the house on the block 
+	// Update relevant variable(s) and call on displayLand().
+	public boolean addHouse(byte rowPos, byte colPos, byte rows, byte columns) {
+		
+		// You may find the code snippet below useful
+		if (rule1(rowPos, colPos, rows, columns) && rule2(rowPos, colPos, rows, columns) && rule3(rowPos, colPos, rows, columns) && rule4(rows, columns)) 
+		{
+			this.vacant = false;
+			byte refColPos = colPos;
+			// Securing house as all rules has been validated
+			for(int i=0; i < rows; i++) {
+				for(int j=0; j < columns; j++) {
+					this.block[rowPos][colPos] = (int)currentHouse;
+					colPos += 1;
+				}
+				rowPos += 1;
+				colPos = refColPos;
+			}
+			currentHouse += 1;
+			// Secured the block
+			this.displayBlock();
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
+	
+	public boolean rule1(byte rowPos, byte colPos, byte rows, byte columns) {
+		
+		// House can start from (1,1) ensuring house leaves an empty row & column from start 
+		if ( (rowPos >= minDistanceFromBlockEdges) && (colPos >= minDistanceFromBlockEdges) ) {
+			// Ensures house is within the block and leaves atleast 1 row and column at end
+			if( (rowPos + rows) <= (blockRows - minDistanceFromBlockEdges) && (colPos + columns) <= (blockCols - minDistanceFromBlockEdges)) {
+				return true;
+			}else {
+				System.out.println("House size is not within block size.");
+				return false;
+			}
+		
+		 }else { 
+			System.out.println("House size is not within block size. "); 
+		 	return false; 
+		 }
+	}
+	
+	// It checks if the blocks are available
+	public boolean rule2(byte rowPos, byte colPos, byte rows, byte columns) {
+		
+		// +1 -1 row and col check
+		// End of +1 -1 logic check
+		
+		byte refColPos = (byte) (colPos - minDistanceInHouses);
+		colPos = (byte) (colPos - minDistanceInHouses);
+		rowPos = (byte) (rowPos - minDistanceInHouses);
+		// Securing house as all rules has been validated
+		for(int i=0; i < (rows + (minDistanceInHouses*2)); i++) {
+			for(int j=0; j < (columns + (minDistanceInHouses*2)); j++) {
+				if(this.block[rowPos][colPos] != emptyChar)
+				{
+					ProgFunAssignment1.console_log("This is occupied - rowPos : "+rowPos+" colPos : "+colPos);
+					System.out.println("Minimum Space of "+minDistanceInHouses+" is required between houses from all it's edges");
+					return false;
+				}
+				colPos += 1;
+			}
+			rowPos += 1;
+			colPos = refColPos;
+		}
+		
+		return true;
+	}
+	
+	// Rule 3 is already part of rule 1. Essentially no house will be go beyond availableRows - 1 and availableColumns - 1 limits
+	public boolean rule3(byte rowPos, byte colPos, byte rows, byte columns) {
+		if( (rowPos + rows) <= (blockRows - minDistanceFromBlockEdges) && (colPos + columns) <= (blockCols - minDistanceFromBlockEdges))
+		{
+			return true;
+		}else {
+			System.out.println("Part of the house is going out of the block");
+			return false;
+		}
+		
+	}
+	
+	// Rule 4 validation : Minimum size of house should be 1x1
+	public boolean rule4(int rows, int columns) {
+		if(rows >= minHouseRows && columns >= minHouseCols) {
+			return true;
+		}else {
+			System.out.println("Min house size should be "+minHouseRows+"x"+minHouseCols);
+			return false;
+		}
+	}
+
+}

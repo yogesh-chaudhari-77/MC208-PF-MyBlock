@@ -1,0 +1,175 @@
+/*
+ * Filename 	: ProgFunAssignment1.java
+ * Author 		: Yogeshwar Girish Chaudhari 
+ * Email		: s3828116@student.rmit.edu.au
+ * Date			: 15-03-2020
+ * Description 	: MyBlock is a simple tool which can help one design a block of land.
+
+ */
+
+import java.util.InputMismatchException;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+
+// import whatever packages are needed here
+
+// Create instance of this class
+public class ProgFunAssignment1 {
+
+	private static boolean quit 				= false;
+	public MyBlock newBlock 					= null;
+	private static final byte minRowColStart 	= 2;		// Exclusive boundary
+	private static final byte maxRowColEnd 	 	= 10;		// Inclusive boundary
+	private static final byte optAddHouse  	 	= 1;		// Menu option for Adding House 
+	private static final byte optDisplayBlk  	= 2;		// Menu option for Displaying block
+	private static final byte optClearBlk  	 	= 3;		// Menu option for Clearing Block
+	private static final byte optQuit  		 	= 4;		// Menu option for terminating the program
+	private static final boolean debugging_mode = false;	// toggle debugging messages logging
+	private byte blockRows 						= 0;
+	private byte blockCols						= 0;	
+	
+	// Remove everything from main method
+	public static void main(String[] args) {		
+		Scanner userInput = new Scanner(System.in);
+		
+		ProgFunAssignment1 controller = new ProgFunAssignment1();
+		controller.createBlock();
+		
+		controller.newBlock = new MyBlock(controller.getBlockRows(),controller.getBlockCols());
+
+		do {
+			try {
+				printMenu();
+				byte userChoice = (byte) userInput.nextInt();
+				controller.loadOption(userChoice);
+			} catch(NoSuchElementException nse) {
+				ProgFunAssignment1.console_log("Invalid input. User entered something other than a number");
+				System.out.println("Please enter choice from given option");
+				// Log this event but keep the loop running				
+				userInput.nextLine();						// Advance scanner / flush previous input
+			}
+		} while(ProgFunAssignment1.quit == false);
+		
+		userInput.close();
+		
+		System.out.println("Program terminated successfully.");
+		System.exit(0);
+	}
+	// End of main()
+	
+	public void createBlock() {
+		// Create a Scanner object for input
+		Scanner userInput = new Scanner(System.in);
+		int rows = 0, cols = 0;
+		
+		System.out.println("House Allocation Program");
+		System.out.println("=================================");
+		
+		// Separating inputs to show errors right away if any
+		do {
+			try {
+				System.out.print("Please Enter Rows : ");
+				rows = userInput.nextInt();
+			}catch(InputMismatchException ime) {
+				userInput.nextLine();
+			}
+		} while(!validateColsAndRows(rows, "Rows must be greater than "+minRowColStart+" and less than equal to "+maxRowColEnd+". Please try again"));
+
+		do {
+			try {
+				System.out.print("Please Enter Cols : ");
+				cols = userInput.nextInt();
+			} catch(InputMismatchException ime) {
+				userInput.nextLine();
+			}
+		} while(!validateColsAndRows(cols, "Columns must be greater than "+minRowColStart+" and less than equal to "+maxRowColEnd+". Please try again."));
+
+		// Closing opened resources 
+		userInput.close();
+	}
+
+	static boolean validateColsAndRows(int val, String errorMsg) {
+		if( val <= minRowColStart || val > maxRowColEnd) {
+			System.out.println(""+errorMsg);
+			return false;
+		}
+		return true;
+	}
+
+	static void printMenu() {
+		System.out.println("----------------------\n\tMenu\n----------------------");
+		System.out.println("1. Add A House");
+		System.out.println("2. Display The Block");
+		System.out.println("3. Clear Block");
+		System.out.println("4. Quit");
+		System.out.println("----------------------");
+		System.out.print("Enter Your Choice : ");
+	}
+
+	public void loadOption(byte userChoice) {
+		Scanner console = new Scanner(System.in);
+		switch(userChoice)
+		{
+			// Add House
+			case optAddHouse : 
+				System.out.print("Enter Row Position 	: ");
+				byte rowPos = (byte) console.nextInt();
+				System.out.print("Enter Column Position   : ");
+				byte colPos = (byte) console.nextInt();
+				System.out.print("Enter Number Of Rows    : ");
+				byte rows = (byte) console.nextInt();
+				System.out.print("Enter Number Of Columns : ");
+				byte columns = (byte) console.nextInt();
+				
+				if(!this.newBlock.addHouse(rowPos, colPos, rows, columns)){
+					System.out.println("Unable to add house. Please try again.\n");
+				}
+			break;
+	
+			// Display block
+			case optDisplayBlk : 
+				this.newBlock.displayBlock();
+			break;
+	
+			// Clear Block
+			case optClearBlk : 
+				this.newBlock.clearBlock();
+				System.out.println("The Block Has Been Cleared");
+			break;
+	
+			// Terminate the program
+			case optQuit : 
+				ProgFunAssignment1.quit = true;
+				System.out.println("Terminating Program");
+			break;
+	
+			default: 
+				System.out.println("Incorrect Choice. Please try again from below options.");
+		}
+		//console.close();
+	}
+	
+	// Method for logging error messages
+	public static void console_log(String msg) {
+		if(debugging_mode) {
+			System.out.println(msg);
+		}
+	}
+	
+	public byte getBlockRows() {
+		return blockRows;
+	}
+
+	public void setBlockRows(byte blockRows) {
+		this.blockRows = blockRows;
+	}
+
+	public byte getBlockCols() {
+		return blockCols;
+	}
+
+	public void setBlockCols(byte blockCols) {
+		this.blockCols = blockCols;
+	}
+
+}
